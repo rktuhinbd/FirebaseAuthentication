@@ -12,6 +12,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.firebaseauth.Model.UserInformation;
 import com.example.firebaseauth.R;
 import com.example.firebaseauth.ViewModel.InternetConnectionChecker;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -19,6 +20,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthUserCollisionException;
+import com.google.firebase.database.FirebaseDatabase;
 
 public class SignUpActivity extends AppCompatActivity {
 
@@ -70,9 +72,23 @@ public class SignUpActivity extends AppCompatActivity {
                                     editTextName.getEditText().setText("");
                                     editTextEmail.getEditText().setText("");
                                     editTextPassword.getEditText().setText("");
-
                                     progressBar.setVisibility(View.GONE);
                                     Toast.makeText(getApplicationContext(), "User Registration Successful!", Toast.LENGTH_SHORT).show();
+
+                                    UserInformation userInformation = new UserInformation(nameText, emailText);
+                                    FirebaseDatabase.getInstance().getReference("User info")
+                                            .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                                            .setValue(userInformation)
+                                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                @Override
+                                                public void onComplete(@NonNull Task<Void> task) {
+                                                    if (task.isSuccessful()) {
+                                                        Toast.makeText(getApplicationContext(), "User information's saved to online database!", Toast.LENGTH_SHORT).show();
+                                                    } else {
+                                                        Toast.makeText(getApplicationContext(), "User information's save failure!!!", Toast.LENGTH_LONG).show();
+                                                    }
+                                                }
+                                            });
                                 } else {
                                     if (task.getException() instanceof FirebaseAuthUserCollisionException) {
                                         Toast.makeText(getApplicationContext(), "This Email is already registered!", Toast.LENGTH_SHORT).show();
